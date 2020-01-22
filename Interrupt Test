@@ -1,0 +1,32 @@
+static unsigned int state;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2, INPUT);
+  attachInterrupt(digitalPinToInterrupt(2), myISR(), FALLING);
+  state = 0;
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(state == 0){
+    digitalWrite(4, LOW);  
+  } else {
+    for(int i= 0; i < 3; i++){
+      digitalWrite(4, HIGH);   // turn the LED on (HIGH is the voltage level)
+      delay(1000);                       // wait for a second
+      digitalWrite(4, LOW);    // turn the LED off by making the voltage LOW
+      delay(1000);
+    } 
+  }
+
+}
+
+void myISR() {
+  if(state == 0){
+    state = 1;
+  } else {
+    state = 0;
+  }
+}
