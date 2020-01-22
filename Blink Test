@@ -1,0 +1,91 @@
+#include "Arduino.h"
+
+static uint8_t state;
+static unsigned int button;
+static unsigned int mySwitch;
+enum States_enum {OFF, ON, RUN};
+
+/* New Code Not Tested */
+void blink(int pin, int hertz);
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(2, INPUT);  // RUN/STOP button
+  pinMode(3, INPUT);  // ON/OFF switch
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+
+  Serial.begin(9600);
+
+  state = OFF;
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  button = digitalRead(2);
+  mySwitch = digitalRead(3);
+
+  switch (state)
+  {
+    case OFF:
+      if(mySwitch == HIGH){
+         state = ON;  
+         digitalWrite(4, LOW);   // turn off RED LED
+      }
+      else {
+         digitalWrite(4 , HIGH);    // turn on RED LED
+         Serial.println("I'm Off"); // send a message if in OFF state
+      }  
+      break;
+
+      
+    case ON:
+      if(mySwitch == LOW){
+        state = OFF;
+        digitalWrite(5, LOW);    // turn GREEN LED off when switch is LOW
+        break;
+      }
+      
+      if(button == LOW){         // assuming PULL-UP 
+        state = RUN;  
+        digitalWrite(5, LOW);    // turn GREEN LED off as we switch state to RUN 
+      }
+      else{                      // Blink at 10 Hz
+        blink(5, 10);
+        Serial.println("I'm On"); // send a message if in ON state
+      }
+      break;
+
+      
+    case RUN:
+      if(mySwitch == LOW){
+        state = OFF;
+        digitalWrite(6, LOW);    // turn BLUE LED off
+        break;
+      }
+      
+      if (button == LOW){        
+        state = ON;
+        digitalWrite(6, LOW);    // turn BLUE LED off as we switch state to ON
+      }
+      else{                      // long blink 4 Hz, short blink 8 Hz
+        blink(6, 4);
+        blink(6, 8);
+        Serial.println("I'm Running"); // send a message if in RUN state
+      }
+      break;
+  }
+  
+}
+
+void blink (int pin, int hertz) {
+    int time;
+    time = 1/hertz;
+
+    digitalWrite(pin, HIGH);   // turn the LED on (HIGH is the voltage level)
+    delay(time);                       // wait for some second
+    digitalWrite(pin, LOW);    // turn the LED off by making the voltage LOW
+    delay(time); 
+}
