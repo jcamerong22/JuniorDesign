@@ -4,8 +4,7 @@ const byte WheelLeftF = 2;
 const byte WheelLeftB = 3;
 const byte WheelRightF = 4;
 const byte WheelRightB = 5;
-volatile int curr_speed_left;
-volatile int curr_speed_right;
+volatile int curr_speed;
 
 const int MAX = 255;
 const int TQUARTER = 191;
@@ -20,6 +19,7 @@ enum States_enum {STOP, FORWARD, BACKWARD, LEFT, RIGHT, CIRCLE};
 
 void pinClose(int pin);
 void pinOpen(int pin);
+void stateControl();
 void speedControl();
 
 void setup() {
@@ -91,6 +91,26 @@ void loop() {
 
 void speedControl()
 {
+  stateControl();
+  while (Serial.available()) {
+    char c = Serial.read();  //gets one byte from serial buffer
+    readString += c; //makes the string readString 
+    
+    delay(2);  //slow looping to allow buffer to fill with next character
+  }
+
+  if (readString.length() >0) {
+    curr_speed = readString.toInt();
+    Serial.println("Speed:");
+    Serial.println(curr_speed);
+    readString=""; //empty for next input
+    
+    delay(2);  //slow down a bit so motors have time to get inputs
+  }
+}
+
+void stateControl()
+{
   while (Serial.available()) {
     char c = Serial.read();  //gets one byte from serial buffer
     readString += c; //makes the string readString
@@ -123,20 +143,6 @@ void speedControl()
     
     delay(2);  //slow down a bit so motors have time to get inputs
   }
-
-  /*if (readString.length() >0) {
-    curr_speed_left = readStringLeft.toInt();
-    Serial.println("Speed Left:");
-    Serial.println(curr_speed_left);
-
-    curr_speed_right = readStringRight.toInt();
-    Serial.println("Speed Right:");
-    Serial.println(curr_speed_right);
-
-    readString=""; //empty for next input
-    
-    delay(2);  //slow down a bit so motors have time to get inputs
-  }*/
 }
 
 void pinOpen(int pin)
