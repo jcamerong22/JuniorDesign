@@ -50,7 +50,6 @@ void pinClose(byte pin);
 void pinOpen(byte pin);
 void allPinsOpen();
 void stateControl(char c);
-void senseTape();
 void bootSequence();
 void driveMotor(byte pinOpen1, byte pinOpen2, byte pinClose1, byte pinClose2);
 
@@ -156,6 +155,36 @@ void loop() {
   }
 }
 
+void senseTape()
+{
+        int voltage = analogRead(analogPin);
+        bool is_black = voltage < B_LOW;
+        bool is_blue = (voltage >= B_LOW) and (voltage <= B_HIGH);
+        bool is_red = (voltage > R_LOW) and (voltage <= R_HIGH);
+        bool is_yellow = voltage > R_HIGH;
+
+        char cmd;
+        if (is_black) {
+            Serial.println("Detected Black");
+            cmd = BLACK_DO;
+        } else if (is_blue) {
+            Serial.println("Detected Blue");
+            cmd = BLUE_DO;
+        } else if (is_red) {
+            Serial.println("Detected Red");
+            cmd = RED_DO;
+        } else if (is_yellow) {
+            Serial.println("Detected Yellow");
+            cmd = YELLOW_DO;
+        } else {
+            Serial.println("Invalid voltage detected! Check Code!");
+            cmd = 's';
+        }
+
+        stateControl(cmd);
+}
+
+
 void driveMotor(byte pinOpen1, byte pinOpen2, byte pinClose1, byte pinClose2)
 {
     pinOpen(pinOpen1);
@@ -215,35 +244,6 @@ void allPinsOpen()
       pinOpen(WheelLeftF);
       pinOpen(WheelRightF);
       pinOpen(sensorLeds);
-}
-
-void senseTape()
-{
-        int voltage = analogRead(analogPin);
-        bool is_black = voltage < B_LOW;
-        bool is_blue = (voltage >= B_LOW) and (voltage <= B_HIGH);
-        bool is_red = (voltage > R_LOW) and (voltage <= R_HIGH);
-        bool is_yellow = voltage > R_HIGH;
-        
-        char command;       
-        if (is_black) {
-            Serial.println("Detected Black");
-            command = BLACK_DO;
-        } else if (is_blue) {
-            Serial.println("Detected Blue");
-            command = BLUE_DO;
-        } else if (is_red) {
-            Serial.println("Detected Red");
-            command = RED_DO;
-        } else if (is_yellow) {
-            Serial.println("Detected Yellow");
-            command = YELLOW_DO;
-        } else {
-            Serial.println("Invalid voltage detected! Check Code!");
-            command = 's';
-        }
-  
-        stateControl(command);
 }
 
 void stateControl(char c)
