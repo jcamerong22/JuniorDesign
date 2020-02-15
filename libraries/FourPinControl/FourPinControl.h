@@ -7,7 +7,7 @@ class FourPinControl
 {
   public:
     FourPinControl();
-    void newOutputs(int p1, int p2, int p3, int p4);
+    FourPinControl(int p1, int p2, int p3, int p4);
 
     void pinOpen(int p);
     void twoPinsOpen(int p1, int p2);

@@ -36,7 +36,6 @@ Bounds bound = {B_LOW, B_HIGH, R_LOW, R_HIGH};
 Instructions instr = {RED_DO, BLUE_DO, BLACK_DO, YELLOW_DO};
 GroundSensor tapeSensor(sensorLeds, analogPin, bound, instr);
 
-
 /* Pins for wheel control */
 const byte WheelLeftF = 2;
 const byte WheelLeftB = 3;
@@ -67,7 +66,7 @@ void stateControl(uint8_t c);
 void bootSequence();
 
 void setup() {
-  attachInterrupt(digitalPinToInterrupt(analogPin), detect, CHANGE);
+  //attachInterrupt(digitalPinToInterrupt(sensorLeds), detect, CHANGE);
   Serial.begin(9600);  
   Serial.println("Follow the Line Color"); // so I can keep track of what is loaded 
   Serial.println("Bot is OFF");
@@ -91,48 +90,67 @@ void loop() {
 
     case ON:
       bootSequence();
+      tapeSensor.senseColor(&cmd);
+      stateControl();
     break;
     
     case STOP:
-      motors.stop(); // Stop right away
+      tapeSensor.senseColor(&cmd);
+      stateControl();
+      motors.halt();
       break;
     
     case FORWARD:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.forward();
       break;
 
     case BACKWARD:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.backward();
       break;
 
      case LEFT:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.left();
       break;
 
     case RIGHT:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.right();
       break;  
 
     case CLOCKWISE:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.cw();
       break;
 
     case CCLOCKWISE:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.ccw();
       break;
 
     case SEARCH:
-      stateControl(cmd);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
       motors.ccw();
       delay(1000);
+      motors.halt();
+      tapeSensor.senseColor(&cmd);
+      stateControl();
+      delay(500);
       motors.cw();
       delay(3000);
+      tapeSensor.senseColor(&cmd);
+      stateControl();
+      motors.halt();
+      delay(500);
       break;
   }
 }
@@ -148,33 +166,32 @@ void bootSequence()
       Serial.println("1");
       delay(1000);
       digitalWrite(sensorLeds, HIGH);
-      tapeSensor.senseColor(&cmd);
 }
 
-void stateControl(uint8_t c)
+void stateControl()
 {
-    if (c == forward){
+    if (cmd == forward){
         Serial.println("Going Forward");
         state = FORWARD;
-    } else if (c == backward){
+    } else if (cmd == backward){
         Serial.println("Moving Backward");
         state = BACKWARD;
-    }  else if (c == left){
+    }  else if (cmd == left){
         Serial.println("Moving Left");
         state = LEFT;
-    } else if (c == right){
+    } else if (cmd == right){
         Serial.println("Moving Right");
         state = RIGHT;
-    }  else if (c == halt){
+    }  else if (cmd == halt){
         Serial.println("Stop");
         state = STOP;
-    } else if (c == rotate_cw){
+    } else if (cmd == rotate_cw){
         Serial.println("Turn 360 Clockwise");
         state = CLOCKWISE;
-    } else if (c == rotate_ccw){
+    } else if (cmd == rotate_ccw){
         Serial.println("Turn 360 Counter Clockwise");
         state = CCLOCKWISE;
-    } else if (c == search){
+    } else if (cmd == search){
         Serial.println("Searching for path");
         state = SEARCH;
     }
@@ -182,8 +199,9 @@ void stateControl(uint8_t c)
     delay(5);  //slow loop to allow for change in state
 }
 
-void detect()
+/*void detect()
 {
-  tapeSensor.senseColor(&cmd);
-}
+    tapeSensor.senseColor(&cmd);
+    stateControl();
+}*/
  

@@ -7,7 +7,7 @@ FourPinControl::FourPinControl()
     _p1 = _p2 = _p3 = _p4 = 0;
 }
 
-void FourPinControl::newOutputs(int p1, int p2, int p3, int p4)
+FourPinControl::FourPinControl(int p1, int p2, int p3, int p4)
 {
     // Set pins to output mode, remember them
     pinMode(p1, OUTPUT);
