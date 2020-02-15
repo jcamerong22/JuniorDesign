@@ -13,14 +13,25 @@ enum Movements_enum {FORWARD, BACK, LEFT, RIGHT, CW, CCW};
 
 MotorControl::MotorControl(Wheels w, Speeds s)
 {
-    _pinControl.newOutputs(w.leftF, w.leftB, w.rightF, w.rightB);
+    pinMode(w.leftF, OUTPUT);
+    pinMode(w.leftB, OUTPUT);
+    pinMode(w.rightF, OUTPUT);
+    pinMode(w.rightB, OUTPUT);
     _w = w;
     _s = s;
 }
 
-void MotorControl::stop()
+void MotorControl::allPinsOpen()
 {
-    _pinControl.allPinsOpen();
+    digitalWrite(_w.leftF, LOW);
+    digitalWrite(_w.leftB, LOW);
+    digitalWrite(_w.rightF, LOW);
+    digitalWrite(_w.rightB, LOW);
+}
+
+void MotorControl::halt()
+{
+    allPinsOpen();
 }
 
 void MotorControl::forward()
@@ -60,7 +71,8 @@ void MotorControl::ccw()
 
 void MotorControl::driveMotor(int movement)
 {
-    _pinControl.twoPinsOpen(_m.w1, _m.w2);
+    digitalWrite(_m.w1, LOW);
+    digitalWrite(_m.w2, LOW);
     
     switch (movement)
     {
