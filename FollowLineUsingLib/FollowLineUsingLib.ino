@@ -6,10 +6,11 @@ volatile uint8_t state;
 enum States_enum {OFF, ON, STOP, FORWARD, BACKWARD, LEFT, RIGHT, CLOCKWISE, CCLOCKWISE, SEARCH};
 
 volatile uint8_t cmd;
+volatile char off;
 enum Movements_enum {halt, forward, backward, left, right, rotate_cw, rotate_ccw, search}; 
 
 /* Pin to turn on/off ground sensor */
-const byte sensorLeds = 6;
+const byte sensorLeds = 13;
 /* Pin for analog input from ground sensor */
 const byte analogPin = A0;
 
@@ -17,7 +18,7 @@ const byte analogPin = A0;
 const int B_LOW = 300;
 const int B_HIGH = 500;
 const int R_LOW = 500;
-const int R_HIGH = 800;
+const int R_HIGH = 835;
 
 /* Edit this for bot functionality
  * stop = 's'
@@ -26,10 +27,10 @@ const int R_HIGH = 800;
  * right = 'r'
  * left  = 'l'
  */
- const char RED_DO = right;
+ const char RED_DO = forward;
  const char BLUE_DO = forward;
- const char BLACK_DO = search;
- const char YELLOW_DO = halt;
+ const char BLACK_DO = forward;
+ const char YELLOW_DO = forward;
  
  /* Set up the ground sensor */
 Bounds bound = {B_LOW, B_HIGH, R_LOW, R_HIGH};
@@ -64,6 +65,7 @@ MotorControl motors(w, s);
 
 void stateControl(uint8_t c);
 void bootSequence();
+void detect();
 
 void setup() {
   //attachInterrupt(digitalPinToInterrupt(sensorLeds), detect, CHANGE);
@@ -75,23 +77,25 @@ void setup() {
 }
 
 void loop() {
-  while (Serial.available()) {
-    char c = Serial.read();  //gets one byte from serial buffer
-    if ((c = 'Y') || (c = 'y')) {
-        state = ON;
-    }
-  }
-  
+      
   switch (state)
   {
     case OFF:
       /* Starting state, wait for user to turn on*/
+      while (Serial.available()) {
+      off = Serial.read();  //gets one byte from serial buffer
+      if ((off == 'Y') || (off == 'y')) {
+            state = ON;
+        }
+      }     
+      digitalWrite(sensorLeds, LOW);
       break;
 
     case ON:
       bootSequence();
       tapeSensor.senseColor(&cmd);
       stateControl();
+      delay(100);
     break;
     
     case STOP:
@@ -139,18 +143,7 @@ void loop() {
     case SEARCH:
       tapeSensor.senseColor(&cmd);
       stateControl();
-      motors.ccw();
-      delay(1000);
-      motors.halt();
-      tapeSensor.senseColor(&cmd);
-      stateControl();
-      delay(500);
-      motors.cw();
-      delay(3000);
-      tapeSensor.senseColor(&cmd);
-      stateControl();
-      motors.halt();
-      delay(500);
+      detect();
       break;
   }
 }
@@ -170,6 +163,14 @@ void bootSequence()
 
 void stateControl()
 {
+    while (Serial.available()) {
+    char c = Serial.read();  //gets one byte from serial buffer
+        if (c) {
+            state = OFF;
+        }
+    delay(5);
+    }
+  
     if (cmd == forward){
         Serial.println("Going Forward");
         state = FORWARD;
@@ -199,9 +200,59 @@ void stateControl()
     delay(5);  //slow loop to allow for change in state
 }
 
-/*void detect()
+void detect()
 {
-    tapeSensor.senseColor(&cmd);
-    stateControl();
-}*/
+      uint8_t old_cmd = cmd;
+      motors.ccw();
+      delay(200);
+      motors.halt();
+      tapeSensor.senseColor(&cmd);
+      stateControl();
+      delay(500);
+
+      if (old_cmd == cmd) {
+          motors.forward();
+          delay(200);
+          motors.halt();
+          tapeSensor.senseColor(&cmd);
+          stateControl();
+          delay(500);
+      }
+      
+      if (old_cmd == cmd) {
+        motors.cw();
+        delay(200);
+        motors.halt();
+        tapeSensor.senseColor(&cmd);
+        stateControl();
+        delay(500);
+     }
+
+     if (old_cmd == cmd) {
+          motors.forward();
+          delay(200);
+          motors.halt();
+          tapeSensor.senseColor(&cmd);
+          stateControl();
+          delay(500);
+     }
+     
+     if (old_cmd == cmd) {
+        motors.cw();
+        delay(200);
+        motors.halt();
+        tapeSensor.senseColor(&cmd);
+        stateControl();
+        delay(500);
+     }
+
+     if (old_cmd == cmd) {
+          motors.forward();
+          delay(200);
+          motors.halt();
+          tapeSensor.senseColor(&cmd);
+          stateControl();
+          delay(500);
+     }
+}
  
