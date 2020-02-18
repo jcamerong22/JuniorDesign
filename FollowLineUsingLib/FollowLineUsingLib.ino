@@ -63,12 +63,16 @@ Wheels w = {WheelLeftF, WheelLeftB, WheelRightF, WheelRightB};
 Speeds s = {FWD_SPD, BCK_SPD, LFT_SPD, RGT_SPD, RT_CW_SPD, RT_CCW_SPD};
 MotorControl motors(w, s);
 
+const int hallSensor = A1;
+const int pedestrianLed = 6;
+
 void stateControl(uint8_t c);
 void bootSequence();
 void detect();
 
 void setup() {
   //attachInterrupt(digitalPinToInterrupt(sensorLeds), detect, CHANGE);
+  pinMode(pedestrianLed, OUTPUT);
   Serial.begin(9600);  
   Serial.println("Follow the Line Color"); // so I can keep track of what is loaded 
   Serial.println("Bot is OFF");
@@ -195,6 +199,15 @@ void stateControl()
     } else if (cmd == search){
         Serial.println("Searching for path");
         state = SEARCH;
+    }
+
+    int person = analogRead(hallSensor);
+    if (person >= 399) {
+        Serial.println("Pedestrian detected");
+        state = STOP;
+        digitalWrite(pedestrianLed, HIGH);
+    } else {
+        digitalWrite(pedestrianLed, LOW);
     }
     
     delay(5);  //slow loop to allow for change in state
