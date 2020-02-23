@@ -13,20 +13,20 @@ the problem of safe navigation.
 
 **GroundSensor** - handles color sensing and outputs a command.
 <pre><code>Inputs: 
-</code></pre>
   - Bounds for blue and red LEDs voltage reading
     - NOTE: will need to change these a lot based on testing and observation
   - Instructions on what the command should be for each color sense
   NOTE: Now handles color transition
+</code></pre>
 
 **MotorControl** - controls the motors.
 <pre><code>Inputs: 
-</code></pre>
   - Wheels' pins. Indicate four pins for left and right motors
   - Speeds for each direction of movement
   - Accel holds the accelartion time and acceleration speed
   - Adjust helps make the wheels travel straighter
   NOTE: Now handles acceleartion and individual wheel's speed adjustments
+</code></pre>
 
 ## Relevant Folders:
 
